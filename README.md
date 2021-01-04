@@ -8,7 +8,7 @@
 Since machine learning and NLP are disrupting finance to improve customer experience, this repo is about creating a robo advisor wit the potential of being used by customers and prospects to get investment portfolio recommendations for retirement using AWS and Python. 
 
 
-### **Accomplishing the following main tasks:**
+### **Main tasks:**
 Defining an Amazon Lex bot with a single intent that establishes a conversation about the requirements to suggest an investment portfolio for retirement.
 
 Building and Testing the Robo Advisor: Making sure the bot works and responds accurately. 
