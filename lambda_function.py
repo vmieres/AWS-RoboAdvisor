@@ -23,7 +23,7 @@ def build_validation_result(is_valid, violated_slot, message_content):
     return {
         "isValid": is_valid,
         "violatedSlot": violated_slot,
-        "message": {"contentType": "PlainText", "content": message_content},
+        "message": {"contentType": "PlainText", "content": message_content}
     }
 
 
@@ -79,7 +79,20 @@ def close(session_attributes, fulfillment_state, message):
 
     return response
 
-
+def validate_data(age, investment_amount, intent_request):
+    
+    if investment_amount is not None:
+        investment_amount = parse_int(investment_amount)
+        if investment_amount < 5000:
+            return build_validation_result(False, "investmentAmount", "The minimum investment amount is $5,000 USD, could you please provide a greater amount?")
+    
+    if age is not None:
+        age = parse_int(age)
+        if age < 0 or age > 64:
+            return build_validation_result(False, "age", "The maximum age to contract this service is 64, can you provide an age between 0 and 64 please?")
+        
+    return build_validation_result(True, None, None)
+    
 ### Intents Handlers ###
 def recommend_portfolio(intent_request):
     """
@@ -91,14 +104,24 @@ def recommend_portfolio(intent_request):
     investment_amount = get_slots(intent_request)["investmentAmount"]
     risk_level = get_slots(intent_request)["riskLevel"]
     source = intent_request["invocationSource"]
-
+    
+    
+        
     if source == "DialogCodeHook":
         # Perform basic validation on the supplied input slots.
         # Use the elicitSlot dialog action to re-prompt
         # for the first violation detected.
 
         ### YOUR DATA VALIDATION CODE STARTS HERE ###
-
+        slots = get_slots(intent_request)
+        
+        validation_result = validate_data(age, investment_amount, intent_request)
+        
+        if not validation_result["isValid"]:
+            slots[validation_result["violatedSlot"]] = None 
+            return elicit_slot(intent_request["sessionAttributes"], intent_request["currentIntent"]["name"], slots, validation_result["violatedSlot"], validation_result["message"])
+        
+        
         ### YOUR DATA VALIDATION CODE ENDS HERE ###
 
         # Fetch current session attibutes
@@ -109,7 +132,18 @@ def recommend_portfolio(intent_request):
     # Get the initial investment recommendation
 
     ### YOUR FINAL INVESTMENT RECOMMENDATION CODE STARTS HERE ###
-
+    if risk_level == "none":
+        initial_recommendation="100% bonds (AGG), 0% equities (SPY)"
+    if risk_level == "very low":
+        initial_recommendation="80% bonds (AGG), 20% equities (SPY)"
+    if risk_level == "low":
+        initial_recommendation="60% bonds (AGG), 40% equities (SPY)"
+    if risk_level == "medium":
+        initial_recommendation="40% bonds (AGG), 60% equities (SPY)"
+    if risk_level == "high":
+        initial_recommendation="20% bonds (AGG), 80% equities (SPY)"
+    if risk_level == "very high":
+        initial_recommendation="0% bonds (AGG), 100% equities (SPY)"
     ### YOUR FINAL INVESTMENT RECOMMENDATION CODE ENDS HERE ###
 
     # Return a message with the initial recommendation based on the risk level.
